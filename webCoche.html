@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserva de Coche</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="login-container" class="container">
+        <h2>Iniciar sesión</h2>
+        <input type="text" id="username" placeholder="Nombre de usuario" required>
+        <button onclick="login()">Iniciar sesión</button>
+    </div>
+
+    <div id="app-container" class="hidden container">
+        <h2>Reserva de coche chico</h2>
+        <button class="logout-btn" onclick="logout()">Cerrar sesión</button>
+        <div id="reservation-list"></div>
+    </div>
+
+    <div id="reservation-form" class="hidden container">
+        <h3>Haz tu reserva</h3>
+        <p id="date-info"></p>
+        <label for="start-time">Hora de inicio:</label>
+        <input type="time" id="start-time" required>
+        <label for="end-time">Hora de fin:</label>
+        <input type="time" id="end-time" required>
+        <button class="confirm-btn" onclick="confirmReservation()">Confirmar reserva</button>
+        <button class="cancel-btn" onclick="closeReservationForm()">Cancelar</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

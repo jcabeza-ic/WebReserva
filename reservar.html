@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservar Coche</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #74ebd5, #acb6e5);
+            text-align: center;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            margin: 50px auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+        }
+        input, select {
+            padding: 10px;
+            margin: 10px 0;
+            width: 80%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+            border: none;
+        }
+        .confirm-btn {
+            background: #28a745;
+            color: white;
+        }
+        .confirm-btn:hover {
+            background: #218838;
+        }
+        .cancel-btn {
+            background: #dc3545;
+            color: white;
+        }
+        .cancel-btn:hover {
+            background: #c82333;
+        }
+        .time-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .time-inputs {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .time-inputs select {
+            padding: 5px;
+            font-size: 16px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="date-info">Reservar Coche</h2>
+        <div class="time-picker">
+            <label for="start-hour">Hora de inicio:</label>
+            <div class="time-inputs">
+                <select id="start-hour"></select> : 
+                <select id="start-minute"></select>
+            </div>
+        </div>
+        
+        <div class="time-picker">
+            <label for="end-hour">Hora de fin:</label>
+            <div class="time-inputs">
+                <select id="end-hour"></select> : 
+                <select id="end-minute"></select>
+            </div>
+        </div>
+
+
+
+        <br>
+        <button class="confirm-btn" onclick="confirmReservation()">Confirmar</button>
+        <button class="cancel-btn" onclick="cancelReservation()">Cancelar</button>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const date = localStorage.getItem("selectedDate");
+            if (!date) {
+                window.location.href = "/coche/webCoche.html"; // Redirige si no hay fecha seleccionada
+                return;
+            }
+            document.getElementById("date-info").textContent = `Reserva para: ${date}`;
+
+            populateTimeOptions();
+        });
+
+        // Generar opciones de tiempo en intervalos de 5 minutos
+        function populateTimeOptions() {
+            const hours = Array.from({ length: 17 }, (_, i) => 7 + i); // De 7:00 a 22:00
+            const minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(m => String(m).padStart(2, "0"));
+
+            const startHourSelect = document.getElementById("start-hour");
+            const startMinuteSelect = document.getElementById("start-minute");
+            const endHourSelect = document.getElementById("end-hour");
+            const endMinuteSelect = document.getElementById("end-minute");
+
+            startHourSelect.innerHTML = "";
+            startMinuteSelect.innerHTML = "";
+            endHourSelect.innerHTML = "";
+            endMinuteSelect.innerHTML = "";
+
+            hours.forEach(hour => {
+                const option = `<option value="${hour}">${String(hour).padStart(2, '0')}</option>`;
+                startHourSelect.innerHTML += option;
+                endHourSelect.innerHTML += option;
+            });
+
+            minutes.forEach(minute => {
+                const option = `<option value="${minute}">${String(minute).padStart(2, '0')}</option>`;
+                startMinuteSelect.innerHTML += option;
+                endMinuteSelect.innerHTML += option;
+            });
+        }
+
+        function timeToMinutes(hhmm) {
+            const [hours, minutes] = hhmm.split(":").map(Number);
+            return hours * 60 + minutes;
+        }
+
+        function confirmReservation() {
+            const user = localStorage.getItem("currentUser");
+            const date = localStorage.getItem("selectedDate");
+
+            const startHour = document.getElementById("start-hour").value;
+            const startMinute = document.getElementById("start-minute").value;
+            const endHour = document.getElementById("end-hour").value;
+            const endMinute = document.getElementById("end-minute").value;
+
+            const startTime = `${startHour}:${startMinute}`;
+            const endTime = `${endHour}:${endMinute}`;
+
+            if (!startTime || !endTime) {
+                alert("Por favor, selecciona ambas horas.");
+                return;
+            }
+
+            if (timeToMinutes(startTime) >= timeToMinutes(endTime)) {
+                alert(`La hora de inicio debe ser antes de la hora de fin.`);
+                return;
+            }
+
+            let reservations = JSON.parse(localStorage.getItem("reservations")) || [];
+
+            let conflict = reservations.some(res =>
+                res.date === date &&
+                (timeToMinutes(startTime) < timeToMinutes(res.endTime) &&
+                timeToMinutes(endTime) > timeToMinutes(res.startTime))
+            );
+
+            if (conflict) {
+                alert("⛔ Ya existe una reserva en ese horario. Por favor, elige otro.");
+                return;
+            }
+
+            const newReservation = {
+                id: Date.now(),
+                user: user,
+                date: date,
+                startTime: startTime,
+                endTime: endTime
+            };
+
+            reservations.push(newReservation);
+            localStorage.setItem("reservations", JSON.stringify(reservations));
+
+            window.location.href = "/coche/webCoche.html";
+        }
+
+        function cancelReservation() {
+            window.location.href = "/coche/webCoche.html";
+        }
+
+    </script>
+</body>
+</html>
